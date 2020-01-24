@@ -1,0 +1,110 @@
+---
+title: "DataAnalysis"
+author: "Jenna"
+date: "21/01/2020"
+output: html_document
+---
+
+```{r echo=FALSE, include=FALSE}
+library(dplyr)
+library(ggplot2)
+
+```
+
+
+```{r setup 2, echo = FALSE, include = F}
+MData <- read.csv("measurements.csv",header = T)
+
+
+```
+
+
+```{r setup 3, echo = FALSE}
+
+MData <- rename(MData, Org = Organism, Lwi=Limb.Width, Uwi=unitsW, LLg=Limb.Length, ULg=unitsL)
+
+```
+
+
+```{r setup 4, echo = FALSE, include = FALSE}
+
+
+for (i in 1:length(MData$Uwi)) {
+  if(MData$Uwi[i] == 'mm') {
+    MData$Lwi[i] = MData$Lwi[i]/10
+    MData$Uwi[i] = 'cm'
+  } else {
+    print(MData$Lwi)
+  }
+}
+
+
+for (i in 1:length(MData$ULg)) {
+  if(MData$ULg[i] == 'mm') {
+    MData$LLg[i] = MData$LLg[i]/10
+    MData$ULg[i] = 'cm'
+  } else {
+    print(MData$LLg)
+  }
+}
+
+
+```
+
+
+```{r setup 5, echo = FALSE}
+
+for (i in 1:length(MData$Uwi)) {
+  MData$Volume[i] = pi*((MData$Lwi[i]/2)^2*MData$LLg[i])
+}
+
+```
+
+# Limb Width by Limb Length
+
+
+
+```{r setup 6, echo = FALSE}
+
+qplot(x = Lwi, y = LLg, data = MData, xlab = "Limb Width", 
+      ylab = 'Limb Length')
+```
+
+## Plot of Species with Above Average Volume
+```{r setup 7, echo = FALSE}
+Av <- mean(MData$Volume)
+AAV <- filter(MData, Volume > Av)
+
+
+qplot(x = Lwi, y = LLg, data = AAV, xlab = "Limb Width", 
+      ylab = 'Limb Length')
+
+```
+
+
+## Table showing only Species and Volume for only the species with below-average volume
+
+```{r tables, echo = FALSE, include = TRUE} 
+
+BAV <- filter(MData, Volume < Av)
+print(BAV)
+
+```
+
+
+```{r setup 8, echo = FALSE}
+
+MData$Category <- sample(c("A","B"),10,replace=TRUE)
+
+```
+
+## The mean and SD of Length, Width and Volume for each of the groups.
+```{r setup 9, echo = FALSE}
+
+MData <- group_by(MData, Category)
+
+summarize(MData, MeanLW =mean(Lwi), SDLW =sd(Lwi), MeanLL =mean(LLg), SDLL =sd(LLg), MeanVol =mean(Volume), SDVol=sd(Volume))
+
+```
+
+
